@@ -1,6 +1,6 @@
 # Customer Churn & Pricing Risk Prediction Engine with Interactive GUI
 
-[![View Live Project Poster](https://img.shields.io/badge/Portfolio-View%20Interactive%20Poster-blue?style=for-the-badge)](https://worthyskill.github.io/Customer-Churn-Price-Prediction/)
+[![View Live Project Poster](https://img.shields.io/badge/Portfolio-View%20Interactive%20Poster-blue?style=for-the-badge)](https://worthyskill.github.io/Customer-Churn-Price-Prediction/Visuals/)
 
 An end-to-end machine learning engineering project designed to predict customer churn risks and analyze their direct financial/pricing impact on business revenue. This repository features a comprehensive data analytics pipeline, optimized classification/regression modeling, and an interactive Graphical User Interface (GUI) for business forecasting using Python's data science ecosystem.
 
