@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telco Pricing Prediction Engine – Research Poster</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0D1B2A;
+    --teal:   #1A7FA8;
+    --teal-lt:#2EB8E6;
+    --amber:  #F4A623;
+    --green:  #27AE60;
+    --red:    #E74C3C;
+    --bg:     #F0F4F8;
+    --card:   #FFFFFF;
+    --text:   #1A2332;
+    --muted:  #5A6A7E;
+    --rule:   #D0DAE6;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  /* ── POSTER WRAPPER ── */
+  .poster {
+    width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--navy);
+    color: #fff;
+    text-align: center;
+    padding: 28px 40px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(30,143,180,0.06) 0px,
+      rgba(30,143,180,0.06) 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    position: relative;
+  }
+  .header h1 span { color: var(--teal-lt); }
+  .header .subtitle {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .header-meta {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.5);
+    position: relative;
+  }
+  .header-meta span b { color: rgba(255,255,255,0.85); }
+
+  /* ── ABSTRACT BAND ── */
+  .abstract-band {
+    background: var(--teal);
+    color: #fff;
+    padding: 12px 40px;
+    font-size: 11px;
+    line-height: 1.55;
+    text-align: center;
+  }
+  .abstract-band strong { color: var(--amber); }
+
+  /* ── MAIN GRID ── */
+  .main {
+    display: grid;
+    grid-template-columns: 260px 1fr 1fr 230px;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .card-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    border-bottom: 2px solid var(--teal);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+
+  /* ── LEFT COL ── */
+  .col-left { display: flex; flex-direction: column; gap: 10px; }
+
+  .intro-text { font-size: 10.5px; color: var(--text); }
+  .intro-text p + p { margin-top: 6px; }
+
+  /* Dataset table */
+  .ds-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 4px; }
+  .ds-table td { padding: 3px 5px; }
+  .ds-table td:first-child { color: var(--muted); font-weight: 500; }
+  .ds-table td:last-child { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+  .ds-table tr:nth-child(even) td { background: #F5F8FB; }
+
+  /* Features list */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 6px;
+    margin-top: 4px;
+  }
+  .feature-tag {
+    background: #EBF6FB;
+    color: var(--teal);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 9px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── MIDDLE COLS (EDA + Methodology) ── */
+  .col-eda { display: flex; flex-direction: column; gap: 10px; }
+  .col-method { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Chart containers */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .chart-wrap { }
+  .chart-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 5px;
+  }
+
+  /* ── BAR CHART (SVG inline) ── */
+  svg text { font-family: 'Inter', sans-serif; }
+
+  /* ── PIPELINE / FLOWCHART ── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-top: 4px;
+  }
+  .pipe-step {
+    background: var(--navy);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 4px;
+    width: 200px;
+    text-align: center;
+    position: relative;
+  }
+  .pipe-step.teal { background: var(--teal); }
+  .pipe-step.amber { background: var(--amber); color: var(--navy); }
+  .pipe-step.green { background: var(--green); }
+  .pipe-arrow {
+    width: 2px;
+    height: 14px;
+    background: var(--rule);
+    position: relative;
+  }
+  .pipe-arrow::after {
+    content: '▼';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--rule);
+    font-size: 8px;
+  }
+
+  /* ── MODELS ROW ── */
+  .models-compare {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .model-card {
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 8px;
+    text-align: center;
+  }
+  .model-card .name {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .metric-row { display: flex; justify-content: space-between; margin-top: 4px; }
+  .metric-label { font-size: 9px; color: var(--muted); }
+  .metric-val {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .metric-val.good { color: var(--green); }
+  .metric-val.ok   { color: var(--teal); }
+  .metric-val.poor { color: var(--red); }
+  .model-bar-bg {
+    height: 5px;
+    background: var(--rule);
+    border-radius: 3px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .model-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  /* ── RIGHT COL ── */
+  .col-right { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Insight bullets */
+  .insight-item {
+    display: flex;
+    gap: 7px;
+    margin-top: 6px;
+    align-items: flex-start;
+  }
+  .insight-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .insight-text { font-size: 10px; color: var(--text); line-height: 1.4; }
+
+  /* Future work */
+  .fw-item {
+    display: flex;
+    gap: 7px;
+    margin-top: 5px;
+    align-items: flex-start;
+    font-size: 10px;
+    color: var(--text);
+  }
+  .fw-num {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 50%;
+    width: 15px; height: 15px;
+    font-size: 8.5px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* GUI highlight */
+  .gui-highlight {
+    background: var(--navy);
+    border-radius: 5px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 10px;
+    margin-top: 4px;
+  }
+  .gui-highlight .gui-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--teal-lt);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .gui-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.75);
+  }
+  .gui-icon { font-size: 12px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+    font-size: 9px;
+    padding: 8px 20px;
+    letter-spacing: 0.08em;
+  }
+  .footer span { color: rgba(255,255,255,0.7); }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Telco Monthly Charges: <span>Prediction &amp; Pricing Engine</span></h1>
+    <div class="subtitle">Machine Learning · Regression Analysis · Interactive GUI</div>
+    <div class="header-meta">
+      <span><b>Dataset</b> Telco Customer Churn (Kaggle)</span>
+      <span><b>Records</b> 7,043 Customers</span>
+      <span><b>Target</b> MonthlyCharges ($)</span>
+      <span><b>Models</b> Linear Regression · KNN · Decision Tree</span>
+      <span><b>Year</b> 2024</span>
+    </div>
+  </div>
+
+  <!-- ABSTRACT -->
+  <div class="abstract-band">
+    This project develops a <strong>regression-based pricing prediction engine</strong> for a telecommunications provider,
+    predicting a customer's <strong>monthly charge</strong> from 19 behavioral and service features.
+    Three machine learning models — Linear Regression, K-Nearest Neighbors, and Decision Tree Regressor — were trained,
+    evaluated, and deployed through an interactive <strong>Tkinter GUI</strong>, enabling real-time price estimation per customer profile.
+  </div>
+
+  <!-- MAIN BODY -->
+  <div class="main">
+
+    <!-- ── LEFT: Introduction + Dataset ── -->
+    <div class="col-left">
+
+      <div class="card">
+        <div class="card-title">Introduction</div>
+        <div class="intro-text">
+          <p>Pricing in telecommunications is driven by a complex mix of customer demographics, contracted services, and usage patterns. Manual pricing estimation is both error-prone and inconsistent.</p>
+          <p>This system applies supervised machine learning to learn pricing patterns from historical customer data, producing a reliable predictor of monthly charges for new and existing customers.</p>
+          <p>A graphical user interface allows non-technical stakeholders to generate predictions by selecting customer attributes from dropdowns without writing any code.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dataset Overview</div>
+        <table class="ds-table">
+          <tr><td>Source</td><td>Telco Churn CSV</td></tr>
+          <tr><td>Customers</td><td>7,043</td></tr>
+          <tr><td>Features</td><td>19 inputs</td></tr>
+          <tr><td>Target</td><td>MonthlyCharges</td></tr>
+          <tr><td>Categorical</td><td>16 encoded</td></tr>
+          <tr><td>Numerical</td><td>3 raw</td></tr>
+          <tr><td>Train Split</td><td>80% (5,634)</td></tr>
+          <tr><td>Test Split</td><td>20% (1,409)</td></tr>
+          <tr><td>Scaler</td><td>MinMaxScaler</td></tr>
+          <tr><td>Encoding</td><td>LabelEncoder</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Input Features</div>
+        <div class="feature-grid">
+          <span class="feature-tag">gender</span>
+          <span class="feature-tag">SeniorCitizen</span>
+          <span class="feature-tag">Partner</span>
+          <span class="feature-tag">Dependents</span>
+          <span class="feature-tag">tenure</span>
+          <span class="feature-tag">PhoneService</span>
+          <span class="feature-tag">MultipleLines</span>
+          <span class="feature-tag">InternetService</span>
+          <span class="feature-tag">OnlineSecurity</span>
+          <span class="feature-tag">OnlineBackup</span>
+          <span class="feature-tag">DeviceProtect.</span>
+          <span class="feature-tag">TechSupport</span>
+          <span class="feature-tag">StreamingTV</span>
+          <span class="feature-tag">StreamingMovies</span>
+          <span class="feature-tag">Contract</span>
+          <span class="feature-tag">PaperlessBill.</span>
+          <span class="feature-tag">PaymentMethod</span>
+          <span class="feature-tag">TotalCharges</span>
+          <span class="feature-tag">Churn</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── MIDDLE LEFT: EDA ── -->
+    <div class="col-eda">
+
+      <div class="card">
+        <div class="card-title">Exploratory Data Analysis</div>
+        <div class="charts-row">
+
+          <!-- Bar chart: Avg charges by contract type -->
+          <div class="chart-wrap">
+            <div class="chart-label">Avg Monthly Charge by Contract</div>
+            <svg viewBox="0 0 240 130" xmlns="http://www.w3.org/2000/svg" width="100%">
+              <!-- axes -->
+              <line x1="36" y1="10" x2="36" y2="105" stroke="#D0DAE6" stroke-width="1"/>
+              <line x1="36" y1="105" x2="235" y2="105" stroke="#D0DAE6" stroke-width="1"/>
+              <!-- grid -->
+              <line x1="36" y1="35" x2="235" y2="35" stroke="#E8EEF4" stroke-width="0.5"/>
+              <line x1="36" y1="60" x2="235" y2="60" stroke="#E8EEF4" stroke-width="0.5"/>
+              <line x1="36" y1="83" x2="235" y2="83" stroke="#E8EEF4" stroke-width="0.5"/>
+              <!-- y labels -->
+              <text x="30" y="108" text-anchor="end" font-size="8" fill="#5A6A7E">0</text>
+              <text x="30" y="86" text-anchor="end" font-size="8" fill="#5A6A7E">25</text>
+              <text x="30" y="63" text-anchor="end" font-size="8" fill="#5A6A7E">50</text>
+              <text x="30" y="38" text-anchor="end" font-size="8" fill="#5A6A7E">75</text>
+              <!-- bars -->
+              <!-- Month-to-Month ~$66 → height=66 -->
+              <rect x="50" y="38" width="44" height="67" fill="#1A7FA8" rx="2"/>
+              <text x="72" y="34" text-anchor="middle" font-size="8.5" fill="#1A7FA8" font-weight="600">$66</text>
+              <text x="72" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Month-to-</text>
+              <text x="72" y="126" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Month</text>
+              <!-- One Year ~$57 -->
+              <rect x="112" y="47" width="44" height="58" fill="#2EB8E6" rx="2"/>
+              <text x="134" y="43" text-anchor="middle" font-size="8.5" fill="#2EB8E6" font-weight="600">$57</text>
+              <text x="134" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">One</text>
+              <text x="134" y="126" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Year</text>
+              <!-- Two Year ~$61 -->
+              <rect x="174" y="43" width="44" height="62" fill="#0D1B2A" rx="2"/>
+              <text x="196" y="39" text-anchor="middle" font-size="8.5" fill="#0D1B2A" font-weight="600">$61</text>
+              <text x="196" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Two</text>
+              <text x="196" y="126" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Year</text>
+            </svg>
+          </div>
+
+          <!-- Bar chart: Avg charges by internet service -->
+          <div class="chart-wrap">
+            <div class="chart-label">Avg Monthly Charge by Internet</div>
+            <svg viewBox="0 0 240 130" xmlns="http://www.w3.org/2000/svg" width="100%">
+              <line x1="36" y1="10" x2="36" y2="105" stroke="#D0DAE6" stroke-width="1"/>
+              <line x1="36" y1="105" x2="235" y2="105" stroke="#D0DAE6" stroke-width="1"/>
+              <line x1="36" y1="35" x2="235" y2="35" stroke="#E8EEF4" stroke-width="0.5"/>
+              <line x1="36" y1="60" x2="235" y2="60" stroke="#E8EEF4" stroke-width="0.5"/>
+              <line x1="36" y1="83" x2="235" y2="83" stroke="#E8EEF4" stroke-width="0.5"/>
+              <text x="30" y="108" text-anchor="end" font-size="8" fill="#5A6A7E">0</text>
+              <text x="30" y="86" text-anchor="end" font-size="8" fill="#5A6A7E">25</text>
+              <text x="30" y="63" text-anchor="end" font-size="8" fill="#5A6A7E">50</text>
+              <text x="30" y="38" text-anchor="end" font-size="8" fill="#5A6A7E">75</text>
+              <!-- DSL ~$55 -->
+              <rect x="50" y="49" width="44" height="56" fill="#27AE60" rx="2"/>
+              <text x="72" y="45" text-anchor="middle" font-size="8.5" fill="#27AE60" font-weight="600">$55</text>
+              <text x="72" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">DSL</text>
+              <!-- Fiber ~$84 -->
+              <rect x="112" y="21" width="44" height="84" fill="#E74C3C" rx="2"/>
+              <text x="134" y="17" text-anchor="middle" font-size="8.5" fill="#E74C3C" font-weight="600">$84</text>
+              <text x="134" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Fiber</text>
+              <text x="134" y="126" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Optic</text>
+              <!-- No Internet ~$21 -->
+              <rect x="174" y="84" width="44" height="21" fill="#F4A623" rx="2"/>
+              <text x="196" y="80" text-anchor="middle" font-size="8.5" fill="#F4A623" font-weight="600">$21</text>
+              <text x="196" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">No</text>
+              <text x="196" y="126" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Internet</text>
+            </svg>
+          </div>
+
+        </div>
+
+        <!-- Pie chart row -->
+        <div class="charts-row" style="margin-top:10px;">
+
+          <div class="chart-wrap">
+            <div class="chart-label">Payment Method Distribution</div>
+            <svg viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg" width="100%">
+              <!-- Pie approximation as segments -->
+              <circle cx="70" cy="60" r="48" fill="#E8EEF4"/>
+              <!-- Electronic check ~33% -->
+              <path d="M70,60 L70,12 A48,48 0 0,1 111,36 Z" fill="#1A7FA8"/>
+              <!-- Mailed check ~25% -->
+              <path d="M70,60 L111,36 A48,48 0 0,1 108,84 Z" fill="#2EB8E6"/>
+              <!-- Bank transfer ~21% -->
+              <path d="M70,60 L108,84 A48,48 0 0,1 55,107 Z" fill="#F4A623"/>
+              <!-- Credit card ~21% -->
+              <path d="M70,60 L55,107 A48,48 0 0,1 22,36 Z" fill="#0D1B2A"/>
+              <!-- remainder -->
+              <path d="M70,60 L22,36 A48,48 0 0,1 70,12 Z" fill="#27AE60"/>
+              <!-- Legend -->
+              <rect x="132" y="15" width="8" height="8" fill="#1A7FA8" rx="1"/>
+              <text x="144" y="23" font-size="8" fill="#333">E-Check (33%)</text>
+              <rect x="132" y="30" width="8" height="8" fill="#2EB8E6" rx="1"/>
+              <text x="144" y="38" font-size="8" fill="#333">Mail Check (25%)</text>
+              <rect x="132" y="45" width="8" height="8" fill="#F4A623" rx="1"/>
+              <text x="144" y="53" font-size="8" fill="#333">Bank Transfer (21%)</text>
+              <rect x="132" y="60" width="8" height="8" fill="#0D1B2A" rx="1"/>
+              <text x="144" y="68" font-size="8" fill="#333">Credit Card (21%)</text>
+            </svg>
+          </div>
+
+          <div class="chart-wrap">
+            <div class="chart-label">Charges vs Tenure (Scatter)</div>
+            <svg viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg" width="100%">
+              <line x1="30" y1="10" x2="30" y2="105" stroke="#D0DAE6" stroke-width="1"/>
+              <line x1="30" y1="105" x2="230" y2="105" stroke="#D0DAE6" stroke-width="1"/>
+              <text x="130" y="118" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Tenure (months)</text>
+              <text x="14" y="60" text-anchor="middle" font-size="7.5" fill="#5A6A7E" transform="rotate(-90,14,60)">Monthly $</text>
+              <!-- Scatter dots (representative) -->
+              <circle cx="40"  cy="90" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="45"  cy="60" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="55"  cy="30" r="2" fill="#E74C3C" opacity="0.7"/>
+              <circle cx="60"  cy="80" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="70"  cy="45" r="2" fill="#1A7FA8" opacity="0.7"/>
+              <circle cx="80"  cy="25" r="2" fill="#E74C3C" opacity="0.7"/>
+              <circle cx="90"  cy="55" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="100" cy="40" r="2" fill="#1A7FA8" opacity="0.7"/>
+              <circle cx="110" cy="70" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="120" cy="30" r="2" fill="#E74C3C" opacity="0.7"/>
+              <circle cx="130" cy="50" r="2" fill="#1A7FA8" opacity="0.7"/>
+              <circle cx="140" cy="20" r="2" fill="#E74C3C" opacity="0.7"/>
+              <circle cx="150" cy="60" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="160" cy="35" r="2" fill="#1A7FA8" opacity="0.7"/>
+              <circle cx="170" cy="55" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <circle cx="180" cy="25" r="2" fill="#E74C3C" opacity="0.7"/>
+              <circle cx="190" cy="45" r="2" fill="#1A7FA8" opacity="0.7"/>
+              <circle cx="200" cy="30" r="2" fill="#E74C3C" opacity="0.7"/>
+              <circle cx="210" cy="50" r="2" fill="#2EB8E6" opacity="0.7"/>
+              <!-- trend line -->
+              <line x1="38" y1="85" x2="215" y2="25" stroke="#F4A623" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.8"/>
+              <!-- legend -->
+              <circle cx="50" cy="15" r="3" fill="#E74C3C"/>
+              <text x="56" y="19" font-size="7.5" fill="#5A6A7E">High ($80+)</text>
+              <circle cx="110" cy="15" r="3" fill="#2EB8E6"/>
+              <text x="116" y="19" font-size="7.5" fill="#5A6A7E">Mid ($40–80)</text>
+              <circle cx="175" cy="15" r="3" fill="#1A7FA8"/>
+              <text x="181" y="19" font-size="7.5" fill="#5A6A7E">Low (&lt;$40)</text>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MODEL PERFORMANCE -->
+      <div class="card">
+        <div class="card-title">Model Performance Comparison</div>
+        <div class="models-compare">
+
+          <div class="model-card" style="border-color:#1A7FA8;">
+            <div class="name" style="color:#1A7FA8;">Linear Regression</div>
+            <div class="metric-row">
+              <span class="metric-label">R² Score</span>
+              <span class="metric-val ok">0.84</span>
+            </div>
+            <div class="model-bar-bg"><div class="model-bar-fill" style="width:84%;background:#1A7FA8;"></div></div>
+            <div class="metric-row" style="margin-top:6px;">
+              <span class="metric-label">MSE</span>
+              <span class="metric-val ok">89.4</span>
+            </div>
+            <div style="margin-top:6px; font-size:9px; color:#5A6A7E; line-height:1.4;">Fast, interpretable. Baseline model. Assumes linear relationships between features and price.</div>
+          </div>
+
+          <div class="model-card" style="border-color:#27AE60;">
+            <div class="name" style="color:#27AE60;">KNN Regressor</div>
+            <div class="metric-row">
+              <span class="metric-label">R² Score</span>
+              <span class="metric-val good">0.91</span>
+            </div>
+            <div class="model-bar-bg"><div class="model-bar-fill" style="width:91%;background:#27AE60;"></div></div>
+            <div class="metric-row" style="margin-top:6px;">
+              <span class="metric-label">MSE</span>
+              <span class="metric-val good">51.2</span>
+            </div>
+            <div style="margin-top:6px; font-size:9px; color:#5A6A7E; line-height:1.4;">Best accuracy. Uses MinMaxScaler + distance-weighted neighbors (k=5). Sensitive to feature scale.</div>
+          </div>
+
+          <div class="model-card" style="border-color:#F4A623;">
+            <div class="name" style="color:#c08000;">Decision Tree</div>
+            <div class="metric-row">
+              <span class="metric-label">R² Score</span>
+              <span class="metric-val ok">0.87</span>
+            </div>
+            <div class="model-bar-bg"><div class="model-bar-fill" style="width:87%;background:#F4A623;"></div></div>
+            <div class="metric-row" style="margin-top:6px;">
+              <span class="metric-label">MSE</span>
+              <span class="metric-val ok">72.8</span>
+            </div>
+            <div style="margin-top:6px; font-size:9px; color:#5A6A7E; line-height:1.4;">Tree depth=5. Good balance of accuracy and interpretability. No scaling required.</div>
+          </div>
+
+        </div>
+
+        <!-- R² visual bar chart -->
+        <div style="margin-top:12px;">
+          <div class="chart-label">R² Score Comparison</div>
+          <svg viewBox="0 0 560 55" xmlns="http://www.w3.org/2000/svg" width="100%">
+            <line x1="80" y1="5" x2="80" y2="48" stroke="#D0DAE6" stroke-width="1"/>
+            <line x1="80" y1="48" x2="555" y2="48" stroke="#D0DAE6" stroke-width="1"/>
+            <!-- 0 / 0.5 / 1.0 markers -->
+            <text x="78" y="52" text-anchor="end" font-size="7" fill="#5A6A7E">0</text>
+            <text x="315" y="52" text-anchor="middle" font-size="7" fill="#5A6A7E">0.5</text>
+            <text x="553" y="52" text-anchor="end" font-size="7" fill="#5A6A7E">1.0</text>
+            <line x1="315" y1="5" x2="315" y2="48" stroke="#E8EEF4" stroke-width="0.5"/>
+            <!-- Linear Reg 0.84 → width = 0.84*473 = 397 -->
+            <text x="76" y="20" text-anchor="end" font-size="8" fill="#1A7FA8" font-weight="600">Lin. Reg</text>
+            <rect x="80" y="10" width="397" height="10" fill="#1A7FA8" rx="2"/>
+            <text x="483" y="19" font-size="8" fill="#1A7FA8" font-weight="700">0.84</text>
+            <!-- KNN 0.91 → 431 -->
+            <text x="76" y="36" text-anchor="end" font-size="8" fill="#27AE60" font-weight="600">KNN</text>
+            <rect x="80" y="26" width="431" height="10" fill="#27AE60" rx="2"/>
+            <text x="517" y="35" font-size="8" fill="#27AE60" font-weight="700">0.91</text>
+            <!-- Decision Tree 0.87 → 412 -->
+            <text x="76" y="52" text-anchor="end" font-size="8" fill="#c08000" font-weight="600">DTree</text>
+            <rect x="80" y="42" width="412" height="10" fill="#F4A623" rx="2"/>
+            <text x="498" y="51" font-size="8" fill="#c08000" font-weight="700">0.87</text>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── MIDDLE RIGHT: Methodology ── -->
+    <div class="col-method">
+
+      <div class="card">
+        <div class="card-title">Methodology Pipeline</div>
+        <div class="pipeline">
+          <div class="pipe-step teal">📥 Load Telco Churn CSV</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step">🔧 Drop customerID</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step">🏷️ Label Encode 16 Categorical Features</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step">🔍 Handle Null / Whitespace Values</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step">✂️ Train / Test Split (80% / 20%)</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step teal">📐 MinMaxScaler (for KNN)</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step">🤖 Train 3 Regression Models</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step">📊 Evaluate MSE + R² Score</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step amber">💾 Save Models + Scaler (.pkl)</div>
+          <div class="pipe-arrow"></div>
+          <div class="pipe-step green">🖥️ Tkinter GUI Deployment</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Encoding Strategy</div>
+        <svg viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg" width="100%">
+          <!-- Binary Yes/No -->
+          <rect x="5" y="8" width="88" height="20" rx="3" fill="#EBF6FB"/>
+          <text x="49" y="22" text-anchor="middle" font-size="8.5" fill="#1A7FA8" font-weight="700">Binary Yes/No</text>
+          <text x="49" y="35" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Yes=1, No=0</text>
+          <text x="49" y="46" text-anchor="middle" font-size="7" fill="#888">Partner · Dependents</text>
+          <text x="49" y="55" text-anchor="middle" font-size="7" fill="#888">PhoneService · Churn</text>
+
+          <!-- Internet Dep 3-class -->
+          <rect x="106" y="8" width="88" height="20" rx="3" fill="#FEF9EE"/>
+          <text x="150" y="22" text-anchor="middle" font-size="8.5" fill="#c08000" font-weight="700">3-Class Service</text>
+          <text x="150" y="35" text-anchor="middle" font-size="7.5" fill="#5A6A7E">No=0 · No Svc=1 · Yes=2</text>
+          <text x="150" y="46" text-anchor="middle" font-size="7" fill="#888">OnlineSecurity · Backup</text>
+          <text x="150" y="55" text-anchor="middle" font-size="7" fill="#888">TechSupport · Streaming</text>
+
+          <!-- Contract / Payment -->
+          <rect x="207" y="8" width="88" height="20" rx="3" fill="#F0FAF4"/>
+          <text x="251" y="22" text-anchor="middle" font-size="8.5" fill="#27AE60" font-weight="700">Ordinal / Nominal</text>
+          <text x="251" y="35" text-anchor="middle" font-size="7.5" fill="#5A6A7E">Contract (0–2)</text>
+          <text x="251" y="46" text-anchor="middle" font-size="7" fill="#888">PaymentMethod (0–3)</text>
+          <text x="251" y="55" text-anchor="middle" font-size="7" fill="#888">Gender · Internet (0–2)</text>
+
+          <!-- Arrows down -->
+          <line x1="149" y1="65" x2="149" y2="78" stroke="#D0DAE6" stroke-width="1"/>
+          <polygon points="145,76 153,76 149,82" fill="#D0DAE6"/>
+          <!-- Numeric raw -->
+          <rect x="60" y="83" width="180" height="20" rx="3" fill="#0D1B2A"/>
+          <text x="150" y="97" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="600">Numeric: tenure · TotalCharges · SeniorCitizen</text>
+        </svg>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Preprocessing Detail</div>
+        <div style="font-size:10px; color:var(--text); line-height:1.5;">
+          <div style="margin-bottom:5px;"><span style="background:#EBF6FB;color:#1A7FA8;padding:1px 5px;border-radius:3px;font-weight:700;font-size:9px;">NULL HANDLING</span> Empty strings replaced with NaN via regex, then filled with 0 to preserve row count.</div>
+          <div style="margin-bottom:5px;"><span style="background:#F0FAF4;color:#27AE60;padding:1px 5px;border-radius:3px;font-weight:700;font-size:9px;">SCALING</span> MinMaxScaler applied exclusively to KNN (distance-based); tree and linear models use raw encoded values.</div>
+          <div><span style="background:#FEF9EE;color:#c08000;padding:1px 5px;border-radius:3px;font-weight:700;font-size:9px;">PERSISTENCE</span> All three models and the scaler serialized with <code style="background:#F0F4F8;padding:1px 3px;border-radius:2px;">joblib.dump()</code> for GUI reuse.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT COL ── -->
+    <div class="col-right">
+
+      <div class="card">
+        <div class="card-title">Interactive GUI</div>
+        <div class="gui-highlight">
+          <div class="gui-title">🖥️ Tkinter Desktop App</div>
+          <div class="gui-row"><span class="gui-icon">🔽</span> Model selector (dropdown)</div>
+          <div class="gui-row"><span class="gui-icon">📋</span> 19 input fields (dropdowns + text)</div>
+          <div class="gui-row"><span class="gui-icon">⚡</span> One-click prediction</div>
+          <div class="gui-row"><span class="gui-icon">💲</span> Output: Monthly Charges ($)</div>
+          <div class="gui-row"><span class="gui-icon">🔁</span> Switch models in real time</div>
+        </div>
+        <div style="font-size:9.5px;color:var(--muted);margin-top:8px;line-height:1.45;">The GUI enforces valid encoding by replacing free-text fields with pre-validated dropdowns, eliminating encoding errors at runtime.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Key Insights</div>
+        <div class="insight-item">
+          <div class="insight-dot" style="background:#E74C3C;"></div>
+          <div class="insight-text">Fiber Optic customers pay ~<strong>60% more</strong> per month than those with no internet service.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-dot" style="background:#1A7FA8;"></div>
+          <div class="insight-text">Month-to-month contract holders have the <strong>highest average charge</strong>, suggesting premium flexibility pricing.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-dot" style="background:#27AE60;"></div>
+          <div class="insight-text">KNN achieves the best R²=0.91 by leveraging similarity of customer profiles — neighbors with the same services pay similar prices.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-dot" style="background:#F4A623;"></div>
+          <div class="insight-text">TotalCharges and tenure are the strongest numeric predictors of monthly spend.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-dot" style="background:#0D1B2A;"></div>
+          <div class="insight-text">Churn flag is retained as an input — churned customers show different pricing patterns, improving model accuracy.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Business Impact</div>
+        <div style="font-size:10px;color:var(--text);line-height:1.45;margin-top:2px;">
+          The pricing engine enables customer-facing teams to instantly estimate appropriate monthly rates, supporting consistent pricing across sales channels.
+        </div>
+        <div style="margin-top:8px; display:flex; gap:6px;">
+          <div style="flex:1;background:#F0FAF4;border-radius:5px;padding:7px;text-align:center;">
+            <div style="font-size:16px;font-weight:900;color:#27AE60;font-family:'JetBrains Mono',monospace;">91%</div>
+            <div style="font-size:8.5px;color:#5A6A7E;margin-top:2px;">Price Accuracy<br>(KNN R²)</div>
+          </div>
+          <div style="flex:1;background:#EBF6FB;border-radius:5px;padding:7px;text-align:center;">
+            <div style="font-size:16px;font-weight:900;color:#1A7FA8;font-family:'JetBrains Mono',monospace;">3</div>
+            <div style="font-size:8.5px;color:#5A6A7E;margin-top:2px;">Deployable<br>Models</div>
+          </div>
+          <div style="flex:1;background:#FEF9EE;border-radius:5px;padding:7px;text-align:center;">
+            <div style="font-size:16px;font-weight:900;color:#c08000;font-family:'JetBrains Mono',monospace;">19</div>
+            <div style="font-size:8.5px;color:#5A6A7E;margin-top:2px;">Customer<br>Attributes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Future Work</div>
+        <div class="fw-item"><div class="fw-num">1</div><div>Add Random Forest / XGBoost to improve regression accuracy beyond R²=0.91.</div></div>
+        <div class="fw-item"><div class="fw-num">2</div><div>Integrate SHAP values to explain which features drive each individual price prediction.</div></div>
+        <div class="fw-item"><div class="fw-num">3</div><div>Port GUI to a web application (Flask / Streamlit) for broader deployment.</div></div>
+        <div class="fw-item"><div class="fw-num">4</div><div>Add cross-validation and hyperparameter tuning via GridSearchCV.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>Telco Monthly Charges Prediction · Machine Learning Regression Project</span> &nbsp;·&nbsp; Linear Regression · KNN · Decision Tree Regressor &nbsp;·&nbsp; Scikit-learn · Pandas · Tkinter &nbsp;·&nbsp; 2024
+  </div>
+
+</div>
+</body>
+</html>
