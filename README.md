@@ -25,3 +25,9 @@ An end-to-end machine learning engineering project designed to predict customer 
    ```bash
    git clone [https://github.com/WorthySkill/Customer-Churn-Price-Prediction.git](https://github.com/WorthySkill/Customer-Churn-Price-Prediction.git)
    cd Customer-Churn-Price-Prediction
+2. Install the necessary dependencies:
+   ```bash
+   pip install numpy pandas scikit-learn matplotlib seaborn
+3. Launch the application:
+
+Open Pricing_with_GUI.ipynb in your preferred Jupyter environment (VS Code or Jupyter Lab) and run all cells to spin up the predictive GUI instance.
