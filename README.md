@@ -23,5 +23,5 @@ An end-to-end machine learning engineering project designed to predict customer 
 ## 🔧 How to Build and Run
 1. Clone the repository:
    ```bash
-   git clone https://github.com/WorthySkill/Customer-Churn-Price-Prediction.git
+   git clone [https://github.com/WorthySkill/Customer-Churn-Price-Prediction.git](https://github.com/WorthySkill/Customer-Churn-Price-Prediction.git)
    cd Customer-Churn-Price-Prediction
